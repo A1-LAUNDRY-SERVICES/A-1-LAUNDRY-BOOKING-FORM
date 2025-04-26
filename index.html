@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A1 Laundry Services</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+    header { background-color: #007bff; color: white; padding: 20px; text-align: center; }
+    main { max-width: 900px; margin: auto; padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); }
+    .form-group, .row { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    input, select, textarea, button { width: 100%; padding: 10px; font-size: 1rem; border-radius: 4px; border: 1px solid #ccc; }
+    .row { display: flex; gap: 20px; }
+    .row .form-group { flex: 1; }
+    .summary, .selected-services { background-color: #f0f0f0; padding: 15px; border-radius: 6px; margin-top: 20px; }
+    .summary p { margin: 5px 0; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background-color: #e9ecef; }
+    .remove-btn { color: red; cursor: pointer; font-weight: bold; }
+    .confirmation-message { display: none; margin-top: 20px; padding: 10px; background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; border-radius: 5px; }
+    button[type="submit"] { background-color: #28a745; color: white; font-weight: bold; border: none; cursor: pointer; transition: background 0.3s; }
+    button[type="submit"]:hover { background-color: #218838; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>A1 Laundry Services</h1>
+    <p>Professional Laundry Solutions in Navi Mumbai</p>
+    <p>Navi Mumbai - 410208</p>
+    <p><strong>+91 - 88 796 55 728 </strong></p>
+  </header>
+  <main>
+    <form id="laundryForm" onsubmit="submitToWhatsApp(event)">
+      <div class="row">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input type="text" id="address" required>
+      </div>
+
+      <div class="row">
+        <div class="form-group">
+          <label for="service">Select Service</label>
+          <select id="service" onchange="updateUnit()">
+            <option value="">--Select--</option>
+            <option value="Ironing (Daily Wear) (₹8/Pc)">Ironing (Daily Wear) (₹8/Pc)</option>
+            <option value="Steam Ironing (Occasional Wear) (₹50/Pc)">Steam Ironing (Occasional Wear) (₹50/Pc)</option>
+            <option value="Wash & Iron (Kg) (₹80/Kg)">Wash & Iron (Kg) (₹80/Kg)</option>
+            <option value="Wash & Iron (Pc) (₹30/Pc)">Wash & Iron (Pc) (₹30/Pc)</option>
+            <option value="Curtain, Bedsheets Etc Wash (₹199/Kg)">Curtain, Bedsheets Etc Wash (₹199/Kg)</option>
+            <option value="Dry Cleaning (Occasional Wear) (₹249/Pc)">Dry Cleaning (Occasional Wear) (₹249/Pc)</option>
+            <option value="Dry Cleaning (Casual / Formal Wear) (₹149/Pc)">Dry Cleaning (Casual / Formal Wear) (₹149/Pc)</option>
+            <option value="Helmet Cleaning (₹249/Pc)">Helmet Cleaning (₹249/Pc)</option>
+            <option value="Shoe Cleaning (₹299/Pair)">Shoe Cleaning (₹299/Pair)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="quantity">Quantity <span id="unitLabel"></span></label>
+          <input type="number" id="quantity" min="1">
+        </div>
+      </div>
+
+      <button type="button" onclick="addService()">Add Service</button>
+
+      <div class="form-group">
+        <label for="deliveryOption">Delivery Option</label>
+        <select id="deliveryOption" onchange="updateSummary()">
+          <option value="Standard" selected>Standard Service (Within 72 Hours - Free)</option>
+          <option value="Rapid">Rapid Service (Within 48 Hours)</option>
+          <option value="Xpress">Xpress Service (Within 24 Hours)</option>
+        </select>
+      </div>
+
+      <div class="selected-services" id="serviceTable"></div>
+
+      <div class="summary">
+        <p><strong>Total Amount:</strong> ₹<span id="totalAmount">0</span></p>
+        <p><strong>Discount:</strong> ₹<span id="discount">0</span></p>
+        <p><strong>Delivery Charges:</strong> ₹<span id="deliveryCharge">0</span></p>
+        <p><strong>Final Amount:</strong> ₹<span id="finalAmount">0</span></p>
+        <p><strong>Estimated Delivery Date:</strong> <span id="deliveryTime">N/A</span></p>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Notes / Instructions</label>
+        <textarea id="notes" rows="3" placeholder="Any specific care instructions or details..."></textarea>
+      </div>
+
+      <button type="submit">Submit Booking</button>
+    </form>
+
+    <div class="confirmation-message" id="confirmationMsg">
+      Thank you! Your booking has been submitted.
+    </div>
+
+    <div class="terms" style="margin-top: 30px; font-size: 0.9rem; background: #fff3cd; padding: 15px; border-radius: 6px; border: 1px solid #ffeeba;">
+      <h3 style="margin-top: 0;">Terms & Conditions</h3>
+      <ul style="padding-left: 20px; margin: 0;">
+        <li><strong>PAYMENT:</strong></li>
+<ul>
+        <li>All prices are exclusive of tax.</li>
+        <li>Above pricing will be subject to final inspection, examinations & extras based on embellishments, nature of stain, luxury & branded nature of the goods</li>
+        <li>Cancellation fees of 15% will apply incase item has reached us but cancelled from customers side</li>
+        <li>Payment options: UPI, Cash.</li>
+        <li>Payment must be done before or at the time of delivery.</li>
+        <li>We encourage you to make payment online instead of Cash.</li>
+        <li>Please <strong>SHARE</strong> your payment receipt on WhatsApp if paid online.</li>
+        <li>If paid in <strong>CASH</strong>, please ask for a <strong>BILL</strong>.</li>
+       </ul>
+        <li><strong>STAIN REMOVAL:</strong></li>
+        <ul>
+        <li>Stains are removed on a best effort basis with no guarantee on 100% removal.</li>
+        <li>We are entitled to full payment for services rendered.</li>
+        </ul>
+        <li><strong>PICKUP / DELIVERY:</strong></li>
+        <ul>
+        <li>Pickups will be schedule within 1–2 hours depending on Customer Location.</li>
+        <li>Rescheduled pickup/ delivery may require a leadtime of 1 day.</li>
+        <li>Failed deliveries due to customer rescheduling/unavailability/non payment will be attempted within 48h on best effort basis</li>  
+         <ul>
+          <li>Standard Service: Within 72 Hours</li>
+          <li>Rapid Service: Within 48 Hours (+15% on Total Bill)</li>
+          <li>Xpress Service: Within 24 Hours (+30% on Total Bill)</li>
+        </ul>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    function getUnitFromService(service) {
+      const match = service.match(/\(₹\d+\/(Pc|Kg|Pair)\)/);
+      return match ? match[1] : "";
+    }
+
+    function updateUnit() {
+      const service = document.getElementById("service").value;
+      document.getElementById("unitLabel").innerText = service ? `(${getUnitFromService(service)})` : "";
+    }
+
+    function addService() {
+      const serviceSelect = document.getElementById("service");
+      const service = serviceSelect.value;
+      const quantity = parseInt(document.getElementById("quantity").value);
+      if (!service || quantity <= 0) return alert("Please select a valid service and quantity");
+
+      const rateMatch = service.match(/₹(\d+)/);
+      const rate = rateMatch ? parseInt(rateMatch[1]) : 0;
+      const unit = getUnitFromService(service);
+      const amount = rate * quantity;
+
+      const table = document.getElementById("serviceTable");
+      if (!table.innerHTML.includes("<table")) {
+        table.innerHTML = `<table><thead><tr><th>Service</th><th>Rate</th><th>Qty</th><th>Unit</th><th>Amount</th><th>Remove</th></tr></thead><tbody id="servicesList"></tbody></table>`;
+      }
+
+      document.getElementById("servicesList").innerHTML += `
+        <tr>
+          <td>${service}</td>
+          <td>₹${rate}</td>
+          <td>${quantity}</td>
+          <td>${unit}</td>
+          <td>₹${amount}</td>
+          <td><span class="remove-btn" onclick="removeService(this)">X</span></td>
+        </tr>
+      `;
+
+      serviceSelect.selectedIndex = 0;
+      document.getElementById("quantity").value = "";
+      document.getElementById("unitLabel").innerText = "";
+
+      updateSummary();
+    }
+
+    function removeService(el) {
+      el.closest("tr").remove();
+      updateSummary();
+    }
+
+    function getDiscount(total) {
+      if (total > 2500) return total * 0.075;
+      if (total > 1500) return total * 0.06;
+      if (total > 1000) return total * 0.05;
+      if (total > 750) return total * 0.04;
+      if (total > 500) return total * 0.03;
+      if (total > 250) return total * 0.02;
+      if (total > 150) return total * 0.01;
+      return 0;
+    }
+
+    function updateSummary() {
+      const rows = document.querySelectorAll("#servicesList tr");
+      let total = 0;
+      rows.forEach(row => {
+        const amt = parseFloat(row.children[4].innerText.replace("₹", ""));
+        total += amt;
+      });
+      const discount = getDiscount(total);
+      let deliveryCharge = 0;
+      const delivery = document.getElementById("deliveryOption").value;
+      if (delivery === "Rapid") deliveryCharge = total * 0.15;
+      else if (delivery === "Xpress") deliveryCharge = total * 0.3;
+
+      document.getElementById("totalAmount").innerText = total.toFixed(2);
+      document.getElementById("discount").innerText = discount.toFixed(2);
+      document.getElementById("deliveryCharge").innerText = deliveryCharge.toFixed(2);
+      document.getElementById("finalAmount").innerText = (total - discount + deliveryCharge).toFixed(2);
+
+      const date = new Date();
+      const daysToAdd = delivery === "Xpress" ? 1 : delivery === "Rapid" ? 2 : 3;
+      date.setDate(date.getDate() + daysToAdd);
+      document.getElementById("deliveryTime").innerText = date.toDateString();
+    }
+
+    function submitToWhatsApp(e) {
+      e.preventDefault();
+      if (!confirm("Are you sure you want to submit this booking?")) return;
+
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      const address = document.getElementById("address").value;
+      const notes = document.getElementById("notes").value;
+      const deliveryOption = document.getElementById("deliveryOption").value;
+
+      let message = `Hello, I would like to book laundry services.
+
+Name: ${name}
+Phone: ${phone}
+Address: ${address}
+
+Selected Services:\n`;
+      document.querySelectorAll("#servicesList tr").forEach(row => {
+        const service = row.children[0].innerText;
+        const rate = row.children[1].innerText;
+        const qty = row.children[2].innerText;
+        const unit = row.children[3].innerText;
+        const amount = row.children[4].innerText;
+        message += `- ${service} (${rate}) x ${qty} ${unit} = ${amount}\n`;
+      });
+
+      message += `\nDelivery Option: ${deliveryOption}`;
+      message += `\nTotal Amount: ₹${document.getElementById("totalAmount").innerText}`;
+      message += `\nDiscount: ₹${document.getElementById("discount").innerText}`;
+      message += `\nDelivery Charges: ₹${document.getElementById("deliveryCharge").innerText}`;
+      message += `\nFinal Amount: ₹${document.getElementById("finalAmount").innerText}`;
+      message += `\nEstimated Delivery: ${document.getElementById("deliveryTime").innerText}`;
+      if (notes) message += `\nNotes: ${notes}`;
+
+      const url = `https://wa.me/918879655728?text=${encodeURIComponent(message)}`;
+      window.open(url, "_blank");
+
+      document.getElementById("laundryForm").reset();
+      document.getElementById("serviceTable").innerHTML = "";
+      document.getElementById("confirmationMsg").style.display = "block";
+      document.getElementById("unitLabel").innerText = "";
+      updateSummary();
+    }
+  </script>
+</body>
+</html>
